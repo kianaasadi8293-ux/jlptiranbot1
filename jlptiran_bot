@@ -1,0 +1,79 @@
+import telebot
+from telebot import types
+
+# ===== تنظیمات =====
+TOKEN = "8749136578:AAHzGpZOgX2nJRKlKJN_HHMtF45FD2FDQzU"
+CHANNEL = "@jlptiran1"
+
+bot = telebot.TeleBot(TOKEN)
+
+
+# ===== دستور استارت =====
+@bot.message_handler(commands=['start'])
+def start(message):
+
+    markup = types.InlineKeyboardMarkup()
+
+    btn1 = types.InlineKeyboardButton(
+        "📢 عضویت در کانال",
+        url="https://t.me/jlptiran1"
+    )
+
+    btn2 = types.InlineKeyboardButton(
+        "✅ تایید عضویت",
+        callback_data="check"
+    )
+
+    markup.add(btn1)
+    markup.add(btn2)
+
+    bot.send_message(
+        message.chat.id,
+        """🎌 به بزرگ‌ترین ربات آموزش زبان ژاپنی خوش اومدی! 🇯🇵🌸
+
+اگر می‌خوای از تمام امکانات ربات استفاده کنی، ابتدا عضو کانال ما شو.
+
+بعد از عضویت روی «✅ تایید عضویت» بزن.""",
+        reply_markup=markup
+    )
+
+
+# ===== بررسی عضویت =====
+@bot.callback_query_handler(func=lambda call: call.data == "check")
+def check_subscription(call):
+
+    user_id = call.from_user.id
+
+    try:
+        member = bot.get_chat_member(CHANNEL, user_id)
+
+        if member.status in ["member", "administrator", "creator"]:
+
+            bot.answer_callback_query(
+                call.id,
+                "🎉 عضویت شما تایید شد!"
+            )
+
+            bot.send_message(
+                call.message.chat.id,
+                "🇯🇵 خوش اومدی!\n\nحالا می‌تونی از تمام امکانات ربات استفاده کنی 🌸"
+            )
+
+        else:
+
+            bot.answer_callback_query(
+                call.id,
+                "❌ هنوز عضو کانال نشدی."
+            )
+
+    except Exception as e:
+        print(e)
+        bot.answer_callback_query(
+            call.id,
+            "❌ خطا در بررسی عضویت!"
+        )
+
+
+print("🤖 Bot Started...")
+
+bot.infinity_polling(skip_pending=True)
